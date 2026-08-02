@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>GΔ59 ファン自己紹介カードメーカー</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body { font-family: sans-serif; display: flex; gap: 20px; padding: 20px; background: #121212; color: #fff; flex-wrap: wrap; }
+    .form-container { width: 320px; display: flex; flex-direction: column; gap: 8px; }
+    input, textarea, select, button { padding: 8px; border-radius: 4px; border: none; font-size: 0.9rem; }
+    label { font-size: 0.8rem; color: #aaa; margin-top: 5px; }
+    
+    /* 複数選択チェックボックスのスタイル */
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; background: #222; padding: 8px; border-radius: 4px; font-size: 0.85rem; }
+    .checkbox-group label { margin: 0; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    
+    /* 横長カードの基本設定 */
+    #card {
+      width: 600px !important;
+      height: 350px !important;
+      padding: 24px;
+      background: linear-gradient(135deg, #1a0b2e, #7b3fee); 
+      border: 3px solid #7b3fee; 
+      border-radius: 16px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: 0.3s;
+    }
+    .card-header { border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px; }
+    .card-title { font-size: 1.1rem; font-weight: bold; color: #fff; letter-spacing: 1px; opacity: 0.9; }
+    .card-name { font-size: 1.8rem; font-weight: bold; margin-top: 2px; color: #fff; }
+    
+    .card-body { display: flex; flex-direction: column; gap: 6px; font-size: 0.95rem; margin-top: 8px; }
+    
+    /* タグ（バッジ）表示エリア */
+    .tag-container { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; min-height: 24px; }
+    .tag-badge { background: rgba(255, 255, 255, 0.2); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; color: #fff; border: 1px solid rgba(255, 255, 255, 0.4); }
+    
+    .sns-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-top: 6px; background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 8px; }
+    .sns-item { font-size: 0.85rem; color: #eee; word-break: break-all; }
+    .sns-item span { font-weight: bold; color: #fff; }
+    
+    .card-msg-box { font-size: 0.9rem; background: rgba(255, 255, 255, 0.15); padding: 10px; border-radius: 8px; margin-top: 8px; color: #fff; }
+  </style>
+</head>
+<body>
+
+  <div class="form-container">
+    <h2>カード入力</h2>
+    
+    <label>カードのテーマカラー</label>
+    <select id="input-color" onchange="updateCard()">
+      <option value="purple">💜 めぇ</option>
+      <option value="blue">💙 リン</option>
+      <option value="pink">🩷 るな</option>
+      <option value="orange">🧡 こんこん</option>
+      <option value="black">🖤 南方</option>
+      <option value="gray">🩶 運営2</option>
+    </select>
+
+    <input type="text" id="input-name" placeholder="お名前 / ユーザー名" oninput="updateCard()">
+    <input type="text" id="input-oshi" placeholder="推しメンバー" oninput="updateCard()">
+    
+    <label>タイプ（複数選択可）</label>
+    <div class="checkbox-group">
+      <label><input type="checkbox" class="type-check" value="配信勢" onchange="updateCard()"> 配信勢</label>
+      <label><input type="checkbox" class="type-check" value="ARG勢" onchange="updateCard()"> ARG勢</label>
+      <label><input type="checkbox" class="type-check" value="謎解き勢" onchange="updateCard()"> 謎解き勢</label>
+      <label><input type="checkbox" class="type-check" value="コラ勢" onchange="updateCard()"> コラ勢</label>
+    </div>
+
+    <input type="text" id="input-x" placeholder="X (Twitter) ID" oninput="updateCard()">
+    <input type="text" id="input-discord" placeholder="Discord 名" oninput="updateCard()">
+    <input type="text" id="input-youtube" placeholder="YouTube 名" oninput="updateCard()">
+    <input type="text" id="input-tiktok" placeholder="TikTok ID" oninput="updateCard()">
+    
+    <textarea id="input-msg" placeholder="一言メッセージ" oninput="updateCard()"></textarea>
+    
+    <button onclick="shareToX()" style="background: #fff; color: #000; cursor: pointer; font-weight: bold; margin-top: 5px;">画像を保存・共有する</button>
+  </div>
+
+  <div id="card">
+    <div>
+      <div class="card-header">
+        <div class="card-title">GΔ59 FAN CARD</div>
+        <div class="card-name" id="card-name">名前を入力してください</div>
+      </div>
+      
+      <div class="card-body">
+        <div>推し：<span id="card-oshi" style="font-weight: bold;">未設定</span></div>
+        
+        <div class="tag-container" id="card-tags"></div>
+
+        <div class="sns-list">
+          <div class="sns-item">𝕏: <span id="card-x">未設定</span></div>
+          <div class="sns-item">Discord: <span id="card-discord">未設定</span></div>
+          <div class="sns-item">YouTube: <span id="card-youtube">未設定</span></div>
+          <div class="sns-item">TikTok: <span id="card-tiktok">未設定</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-msg-box" id="card-msg">一言メッセージがここに表示されます。</div>
+  </div>
+
+  <script>
+    function updateCard() {
+      // 1. カラー変更処理
+      const colorType = document.getElementById('input-color').value;
+      const card = document.getElementById('card');
+      
+      const themeColors = {
+        blue:   { border: '#5ea3f6', bg: 'linear-gradient(135deg, #0d1b2a, #5ea3f6)' },
+        purple: { border: '#7b3fee', bg: 'linear-gradient(135deg, #1a0b2e, #7b3fee)' },
+        pink:   { border: '#f3b2cd', bg: 'linear-gradient(135deg, #2e0b1a, #f3b2cd)' },
+        orange: { border: '#e58c49', bg: 'linear-gradient(135deg, #2e1a0b, #e58c49)' },
+        black:  { border: '#555555', bg: 'linear-gradient(135deg, #050505, #333333)' },
+        gray:   { border: '#a0a0a0', bg: 'linear-gradient(135deg, #1c1c1c, #707070)' }
+      };
+
+      const selected = themeColors[colorType];
+      card.style.borderColor = selected.border;
+      card.style.background = selected.bg;
+
+      // 2. テキスト反映処理
+      document.getElementById('card-name').innerText = document.getElementById('input-name').value || '名前を入力してください';
+      document.getElementById('card-oshi').innerText = document.getElementById('input-oshi').value || '未設定';
+      document.getElementById('card-x').innerText = document.getElementById('input-x').value || '未設定';
+      document.getElementById('card-discord').innerText = document.getElementById('input-discord').value || '未設定';
+      document.getElementById('card-youtube').innerText = document.getElementById('input-youtube').value || '未設定';
+      document.getElementById('card-tiktok').innerText = document.getElementById('input-tiktok').value || '未設定';
+      document.getElementById('card-msg').innerText = document.getElementById('input-msg').value || '一言メッセージがここに表示されます。';
+
+      // 3. タイプタグ（複数選択）の反映処理
+      const checkedBoxes = document.querySelectorAll('.type-check:checked');
+      const tagsContainer = document.getElementById('card-tags');
+      tagsContainer.innerHTML = '';
+
+      checkedBoxes.forEach(box => {
+        const span = document.createElement('span');
+        span.className = 'tag-badge';
+        span.innerText = box.value;
+        tagsContainer.appendChild(span);
+      });
+    }
+
+    // 画像化とSNS共有
+    async function shareToX() {
+      const cardElement = document.getElementById('card');
+      const canvas = await html2canvas(cardElement);
+      const dataUrl = canvas.toDataURL('image/png');
+      
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = 'G59_card.png';
+      link.click();
+      
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], 'G59_card.png', { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'GΔ59自己紹介カード',
+              text: '自己紹介カードを作成しました！ #GΔ59',
+            });
+          } catch (err) { console.log(err); }
+        } else {
+          alert('画像を保存しました！Xに投稿してね。');
+          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent('自己紹介カードを作成しました！ #GΔ59')}`, '_blank');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
